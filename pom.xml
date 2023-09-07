@@ -154,7 +154,7 @@
         </dependency>
 
     </dependencies>
-
+	<packaging>jar</packaging>
 	<build>
 		<plugins>
 			<plugin>
