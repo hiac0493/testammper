@@ -16,16 +16,19 @@ import com.example.testammper.model.response.belvo.institutions.InstitutionsDeta
 import com.example.testammper.model.response.belvo.links.RegisterLinkResponse;
 import com.example.testammper.repository.BanksRepository;
 import com.example.testammper.utils.EncryptionMethods;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.management.BadAttributeValueExpException;
+import java.lang.reflect.Executable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class BelvoServiceImpl implements BelvoService {
 
     @Autowired
@@ -45,18 +48,23 @@ public class BelvoServiceImpl implements BelvoService {
 
     @Override
     public List<InstitutionsResponse> getInstitutions() {
-        boolean hasMoreData = true;
-        int page = 1;
-        List<InstitutionsResponse> institutionsResponseList = new ArrayList<>();
-        while (hasMoreData) {
-            BelvoInstitutionsResponse response = belvoClient.getInstitutions(page);
-            institutionsResponseList.addAll(ServiceMapper.INSTANCE.toInstitutionsResponseList(response.getResults()));
-            if (institutionsResponseList.size() >= response.getCount()) {
-                hasMoreData = false;
+        try {
+            boolean hasMoreData = true;
+            int page = 1;
+            List<InstitutionsResponse> institutionsResponseList = new ArrayList<>();
+            while (hasMoreData) {
+                BelvoInstitutionsResponse response = belvoClient.getInstitutions(page);
+                institutionsResponseList.addAll(ServiceMapper.INSTANCE.toInstitutionsResponseList(response.getResults()));
+                if (institutionsResponseList.size() >= response.getCount()) {
+                    hasMoreData = false;
+                }
+                page++;
             }
-            page++;
+            return institutionsResponseList;
+        }catch(Exception ex){
+            log.info("Error en el llamado a Belvo: {}", ex.getMessage());
+            throw new BelvoException(ex.getMessage());
         }
-        return institutionsResponseList;
     }
 
     @Override
